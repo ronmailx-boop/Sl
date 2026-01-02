@@ -1,0 +1,254 @@
+﻿<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>רשימת הקניות שלי</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-t-3xl shadow-lg p-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                <h1 class="text-2xl font-bold text-gray-800">רשימת הקניות שלי</h1>
+            </div>
+            <div class="flex gap-2">
+                <!-- כפתור מחיקת הכל - אדום -->
+                <button id="clearAllBtn" onclick="clearAllItems()" class="bg-red-500 hover:bg-red-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110 hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+                <!-- כפתור הוספה - כחול -->
+                <button onclick="showInputForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Input Form -->
+        <div id="inputForm" class="bg-white shadow-lg p-6 border-t border-gray-200 hidden">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">שם המוצר</label>
+                    <input type="text" id="itemName" placeholder="הזן שם מוצר..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">מחיר (₪)</label>
+                    <input type="number" id="itemPrice" placeholder="0.00" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="addItem()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition-colors">הוסף</button>
+                    <button onclick="hideInputForm()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 rounded-lg font-medium transition-colors">ביטול</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Shopping List -->
+        <div class="bg-white shadow-lg p-6">
+            <div id="emptyState" class="text-center py-12 text-gray-400">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                <p class="text-lg">הרשימה ריקה</p>
+                <p class="text-sm">לחץ על + להוספת מוצר</p>
+            </div>
+            <div id="itemsList" class="space-y-3 hidden"></div>
+        </div>
+
+
+        <!-- Total -->
+        <div id="totalSection" class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-b-3xl shadow-lg p-6 text-white hidden">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm opacity-90">סה"כ מוצרים: <span id="itemCount">0</span></p>
+                    <p class="text-3xl font-bold mt-1">₪<span id="totalPrice">0.00</span></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm opacity-90">סכום סופי</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let items = [];
+
+
+        // Load items from storage on page load
+        function loadItems() {
+            const saved = localStorage.getItem('shoppingList');
+            if (saved) {
+                items = JSON.parse(saved);
+                renderItems();
+            }
+        }
+
+
+        // Save items to storage
+        function saveItems() {
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+        }
+
+
+        function showInputForm() {
+            document.getElementById('inputForm').classList.remove('hidden');
+            document.getElementById('itemName').focus();
+        }
+
+
+        function hideInputForm() {
+            document.getElementById('inputForm').classList.add('hidden');
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+        }
+
+
+        function addItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+
+
+            if (name) {
+                items.push({
+                    id: Date.now(),
+                    name: name,
+                    price: price
+                });
+                saveItems();
+                renderItems();
+                hideInputForm();
+            }
+        }
+
+
+        function deleteItem(index) {
+            items.splice(index, 1);
+            saveItems();
+            renderItems();
+        }
+
+
+        function moveItemUp(index) {
+            if (index === 0) return;
+            [items[index - 1], items[index]] = [items[index], items[index - 1]];
+            saveItems();
+            renderItems();
+        }
+
+
+        function moveItemDown(index) {
+            if (index === items.length - 1) return;
+            [items[index], items[index + 1]] = [items[index + 1], items[index]];
+            saveItems();
+            renderItems();
+        }
+
+
+        // פונקציה למחיקת כל המוצרים
+        function clearAllItems() {
+            if (confirm('האם אתה בטוח שברצונך למחוק את כל הרשימה?')) {
+                items = [];
+                saveItems();
+                renderItems();
+            }
+        }
+
+
+        function renderItems() {
+            const emptyState = document.getElementById('emptyState');
+            const itemsList = document.getElementById('itemsList');
+            const totalSection = document.getElementById('totalSection');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+
+
+            if (items.length === 0) {
+                emptyState.classList.remove('hidden');
+                itemsList.classList.add('hidden');
+                totalSection.classList.add('hidden');
+                clearAllBtn.classList.add('hidden');
+                return;
+            }
+
+
+            emptyState.classList.add('hidden');
+            itemsList.classList.remove('hidden');
+            totalSection.classList.remove('hidden');
+            clearAllBtn.classList.remove('hidden');
+
+
+            let html = '';
+            items.forEach((item, index) => {
+                html += `
+                    <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex-1">
+                            <h3 class="font-medium text-gray-800">${item.name}</h3>
+                            <p class="text-indigo-600 font-bold">₪${item.price.toFixed(2)}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex flex-col gap-1">
+                                <button onclick="moveItemUp(${index})" ${index === 0 ? 'disabled' : ''} class="p-1 rounded transition-colors ${index === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="moveItemDown(${index})" ${index === items.length - 1 ? 'disabled' : ''} class="p-1 rounded transition-colors ${index === items.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button onclick="deleteItem(${index})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+
+            itemsList.innerHTML = html;
+
+
+            const total = items.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('itemCount').textContent = items.length;
+            document.getElementById('totalPrice').textContent = total.toFixed(2);
+        }
+
+
+        // Add Enter key support
+        document.getElementById('itemName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('itemPrice').focus();
+            }
+        });
+
+
+        document.getElementById('itemPrice').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+
+
+        // Load saved items when page loads
+        loadItems();
+    </script>
+</body>
+</html>
