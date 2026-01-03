@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -37,7 +37,6 @@
             </div>
         </div>
 
-
         <!-- Input Form -->
         <div id="inputForm" class="bg-white shadow-lg p-6 border-t border-gray-200 hidden">
             <div class="space-y-4">
@@ -56,7 +55,6 @@
             </div>
         </div>
 
-
         <!-- Shopping List -->
         <div class="bg-white shadow-lg p-6">
             <div id="emptyState" class="text-center py-12 text-gray-400">
@@ -68,7 +66,6 @@
             </div>
             <div id="itemsList" class="space-y-3 hidden"></div>
         </div>
-
 
         <!-- Total -->
         <div id="totalSection" class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-b-3xl shadow-lg p-6 text-white hidden">
@@ -84,10 +81,31 @@
         </div>
     </div>
 
+    <!-- Custom Confirmation Dialog -->
+    <div id="confirmDialog" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 m-4 max-w-sm w-full">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">מחיקת הרשימה</h3>
+                <p class="text-gray-600 mb-6">האם אתה בטוח שברצונך למחוק את כל הרשימה?</p>
+                <div class="flex gap-3">
+                    <button onclick="confirmClearAll()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium transition-colors">
+                        מחק הכל
+                    </button>
+                    <button onclick="cancelClearAll()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-medium transition-colors">
+                        ביטול
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         let items = [];
-
 
         // Load items from storage on page load
         function loadItems() {
@@ -98,18 +116,15 @@
             }
         }
 
-
         // Save items to storage
         function saveItems() {
             localStorage.setItem('shoppingList', JSON.stringify(items));
         }
 
-
         function showInputForm() {
             document.getElementById('inputForm').classList.remove('hidden');
             document.getElementById('itemName').focus();
         }
-
 
         function hideInputForm() {
             document.getElementById('inputForm').classList.add('hidden');
@@ -117,11 +132,9 @@
             document.getElementById('itemPrice').value = '';
         }
 
-
         function addItem() {
             const name = document.getElementById('itemName').value.trim();
             const price = parseFloat(document.getElementById('itemPrice').value) || 0;
-
 
             if (name) {
                 items.push({
@@ -135,13 +148,11 @@
             }
         }
 
-
         function deleteItem(index) {
             items.splice(index, 1);
             saveItems();
             renderItems();
         }
-
 
         function moveItemUp(index) {
             if (index === 0) return;
@@ -150,7 +161,6 @@
             renderItems();
         }
 
-
         function moveItemDown(index) {
             if (index === items.length - 1) return;
             [items[index], items[index + 1]] = [items[index + 1], items[index]];
@@ -158,23 +168,29 @@
             renderItems();
         }
 
-
         // פונקציה למחיקת כל המוצרים
         function clearAllItems() {
-            if (confirm('האם אתה בטוח שברצונך למחוק את כל הרשימה?')) {
-                items = [];
-                saveItems();
-                renderItems();
-            }
+            document.getElementById('confirmDialog').classList.remove('hidden');
+            document.getElementById('confirmDialog').classList.add('flex');
         }
 
+        function confirmClearAll() {
+            items = [];
+            saveItems();
+            renderItems();
+            cancelClearAll();
+        }
+
+        function cancelClearAll() {
+            document.getElementById('confirmDialog').classList.add('hidden');
+            document.getElementById('confirmDialog').classList.remove('flex');
+        }
 
         function renderItems() {
             const emptyState = document.getElementById('emptyState');
             const itemsList = document.getElementById('itemsList');
             const totalSection = document.getElementById('totalSection');
             const clearAllBtn = document.getElementById('clearAllBtn');
-
 
             if (items.length === 0) {
                 emptyState.classList.remove('hidden');
@@ -184,12 +200,10 @@
                 return;
             }
 
-
             emptyState.classList.add('hidden');
             itemsList.classList.remove('hidden');
             totalSection.classList.remove('hidden');
             clearAllBtn.classList.remove('hidden');
-
 
             let html = '';
             items.forEach((item, index) => {
@@ -222,15 +236,12 @@
                 `;
             });
 
-
             itemsList.innerHTML = html;
-
 
             const total = items.reduce((sum, item) => sum + item.price, 0);
             document.getElementById('itemCount').textContent = items.length;
             document.getElementById('totalPrice').textContent = total.toFixed(2);
         }
-
 
         // Add Enter key support
         document.getElementById('itemName').addEventListener('keypress', function(e) {
@@ -239,13 +250,11 @@
             }
         });
 
-
         document.getElementById('itemPrice').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 addItem();
             }
         });
-
 
         // Load saved items when page loads
         loadItems();
