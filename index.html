@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>רשימת הקניות שלי</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="description" content="אפליקציה לניהול רשימת קניות עם חישוב מחירים">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -12,28 +15,14 @@
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-2xl mx-auto pb-24">
         <!-- Header -->
-        <div class="bg-white rounded-t-3xl shadow-lg p-6 flex items-center justify-between">
+        <div class="bg-white rounded-t-3xl shadow-lg p-6">
             <div class="flex items-center gap-3">
                 <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
                 </svg>
                 <h1 class="text-2xl font-bold text-gray-800">רשימת הקניות שלי</h1>
-            </div>
-            <div class="flex gap-2">
-                <!-- כפתור מחיקת הכל - אדום -->
-                <button id="clearAllBtn" onclick="clearAllItems()" class="bg-red-500 hover:bg-red-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110 hidden">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                </button>
-                <!-- כפתור הוספה - כחול -->
-                <button onclick="showInputForm()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                </button>
             </div>
         </div>
 
@@ -80,6 +69,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating Action Buttons - Bottom Corners -->
+    <!-- כפתור הוספה - ירוק - קצה ימין -->
+    <button onclick="showInputForm()" class="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-5 shadow-2xl transition-all hover:scale-110 z-40">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+    </button>
+    <!-- כפתור מחיקת הכל - אדום - קצה שמאל -->
+    <button id="clearAllBtn" onclick="clearAllItems()" class="fixed bottom-6 left-6 bg-red-500 hover:bg-red-600 text-white rounded-full p-4 shadow-2xl transition-all hover:scale-110 z-40 hidden">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+    </button>
 
     <!-- Custom Confirmation Dialog -->
     <div id="confirmDialog" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
@@ -140,6 +143,8 @@
                 items.push({
                     id: Date.now(),
                     name: name,
+                    unitPrice: price,
+                    quantity: 1,
                     price: price
                 });
                 saveItems();
@@ -166,6 +171,22 @@
             [items[index], items[index + 1]] = [items[index + 1], items[index]];
             saveItems();
             renderItems();
+        }
+
+        function increaseQuantity(index) {
+            items[index].quantity++;
+            items[index].price = items[index].unitPrice * items[index].quantity;
+            saveItems();
+            renderItems();
+        }
+
+        function decreaseQuantity(index) {
+            if (items[index].quantity > 1) {
+                items[index].quantity--;
+                items[index].price = items[index].unitPrice * items[index].quantity;
+                saveItems();
+                renderItems();
+            }
         }
 
         // פונקציה למחיקת כל המוצרים
