@@ -1,12 +1,12 @@
 {
-  "name": "רשימת הקניות שלי",
-  "short_name": "קניות",
-  "description": "אפליקציה לניהול רשימת קניות עם חישוב מחירים וכמויות",
+  "name": "רשימת קניות (Sl)",
+  "short_name": "קניות Sl",
+  "description": "אפליקציה לניהול רשימת קניות - גרסה Sl",
   "start_url": "/Sl/",
   "scope": "/Sl/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#16A34A",
+  "theme_color": "#4F46E5",
   "orientation": "portrait",
   "dir": "rtl",
   "lang": "he",
@@ -24,7 +24,6 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["shopping", "lifestyle", "productivity"],
-  "screenshots": []
+  "categories": ["shopping", "lifestyle", "productivity"]
 }
 
