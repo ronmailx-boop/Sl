@@ -1,6 +1,6 @@
 {
   "id": "https://ronmailx-boop.github.io/Sl/",
-  "name": "רשימת קניות",
+  "name": "רשימת קניות חכמה",
   "short_name": "רשימת קניות",
   "description": "אפליקציה פשוטה ונוחה לניהול רשימת קניות, מעקב אחר מחירים וסידור מוצרים.",
   "start_url": "https://ronmailx-boop.github.io/Sl/index.html",
@@ -11,19 +11,29 @@
   "orientation": "portrait",
   "dir": "rtl",
   "lang": "he",
-  "categories": ["shopping", "productivity"],
+  "categories": ["shopping", "productivity", "lifestyle"],
+  "prefer_related_applications": false,
+  "related_applications": [],
   "icons": [
     {
       "src": "icon.png",
-      "sizes": "512x512",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "icon.png",
-      "sizes": "512x512",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "label": "מסך ראשי"
     }
   ]
 }
