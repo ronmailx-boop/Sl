@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>רשימת קניות</title>
+    <title>רשימת קניות חכמה</title>
 
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366f1">
@@ -11,49 +11,50 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; background: #f4f7fa; padding-bottom: 220px; }
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); z-index: 1000; padding: 15px; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
         .drag-handle { cursor: grab; display: none; }
         .edit-mode .drag-handle { display: flex; }
-        .sortable-ghost { opacity: 0.3; background: #e0e7ff; }
-        
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 350px; border-radius: 24px; padding: 30px; text-align: center; }
-        .warning-icon { background: #fee2e2; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
-        .price-icon { background: #e0e7ff; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        #reader { width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 15px; border: none !important; }
+        #reader__dashboard_section_csr button { background: #6366f1 !important; color: white !important; border-radius: 10px !important; padding: 10px !important; border: none !important; margin-top: 10px !important; }
     </style>
 </head>
 <body>
 
+    <div id="scannerModal" class="modal-overlay">
+        <div class="modal-content shadow-2xl">
+            <h2 class="text-xl font-bold mb-4">סריקת מוצר</h2>
+            <div id="reader"></div>
+            <button onclick="stopScanner()" class="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl">סגור מצלמה</button>
+        </div>
+    </div>
+
     <div id="customModal" class="modal-overlay">
         <div class="modal-content shadow-2xl">
-            <div class="warning-icon">
-                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
+            <div class="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">מחיקת הרשימה</h2>
-            <p class="text-gray-500 mb-8 leading-relaxed">האם אתה בטוח שברצונך למחוק את כל הרשימה?</p>
+            <h2 class="text-2xl font-bold mb-2">מחיקה כללית</h2>
+            <p class="text-gray-500 mb-8">האם למחוק את כל הרשימה?</p>
             <div class="flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 py-4 bg-gray-100 text-gray-700 font-bold rounded-2xl">ביטול</button>
-                <button onclick="confirmClearAll()" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl">מחק הכל</button>
+                <button onclick="closeDeleteModal()" class="flex-1 py-4 bg-gray-100 rounded-2xl">ביטול</button>
+                <button onclick="confirmClearAll()" class="flex-1 py-4 bg-red-500 text-white font-bold rounded-2xl">מחק</button>
             </div>
         </div>
     </div>
 
     <div id="priceModal" class="modal-overlay">
         <div class="modal-content shadow-2xl">
-            <div class="price-icon">
-                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">עדכון מחיר</h2>
-            <p id="editItemName" class="text-gray-500 mb-4 font-medium"></p>
-            <input type="number" id="newPriceInput" step="0.1" class="w-full p-4 border-2 border-indigo-100 rounded-2xl mb-6 text-center text-xl font-bold outline-none focus:border-indigo-500" placeholder="הכנס מחיר חדש">
+            <h2 class="text-2xl font-bold mb-4">עדכון מחיר</h2>
+            <p id="editItemName" class="mb-4 text-gray-600"></p>
+            <input type="number" id="newPriceInput" class="w-full p-4 border-2 border-indigo-100 rounded-2xl mb-6 text-center text-xl font-bold">
             <div class="flex gap-3">
-                <button onclick="closePriceModal()" class="flex-1 py-4 bg-gray-100 text-gray-700 font-bold rounded-2xl">ביטול</button>
+                <button onclick="closePriceModal()" class="flex-1 py-4 bg-gray-100 rounded-2xl">ביטול</button>
                 <button onclick="confirmPriceUpdate()" class="flex-1 py-4 bg-indigo-600 text-white font-bold rounded-2xl">עדכן</button>
             </div>
         </div>
@@ -62,35 +63,21 @@
     <div class="max-w-md mx-auto p-4">
         <div class="bg-white rounded-2xl shadow-sm p-5 mb-4 flex justify-between items-center">
             <h1 class="text-xl font-bold text-gray-800">הרשימה שלי</h1>
-            <div id="statusTag" class="text-[10px] py-1 px-2 rounded bg-gray-100 text-gray-500 font-bold uppercase tracking-wider">גרירה נעולה</div>
+            <div id="statusTag" class="text-[10px] py-1 px-2 rounded bg-gray-100 text-gray-500 font-bold uppercase">גרירה נעולה</div>
         </div>
 
         <div id="inputForm" class="hidden bg-white p-5 rounded-2xl shadow-lg mb-4 border-2 border-indigo-100">
-            <input type="text" id="itemName" list="products" placeholder="מה קונים?" class="w-full p-3 border rounded-xl mb-3 outline-none focus:border-indigo-500">
-            
-            <datalist id="products">
-                <option value="חלב">
-                <option value="לחם">
-                <option value="ביצים">
-                <option value="גבינה צהובה">
-                <option value="קוטג'">
-                <option value="יוגורט">
-                <option value="חמאה">
-                <option value="שמן זית">
-                <option value="אורז">
-                <option value="פסטה">
-                <option value="קפה">
-                <option value="סוכר">
-                <option value="מלח">
-                <option value="קמח">
-                <option value="נייר טואלט">
-                <option value="נוזל כלים">
-                <option value="עגבניות">
-                <option value="מלפפונים">
-                <option value="בצל">
-                <option value="תפוחי אדמה">
-            </datalist>
-
+            <div class="flex gap-2 mb-3">
+                <div class="relative flex-1">
+                    <input type="text" id="itemName" list="products" placeholder="מה קונים?" class="w-full p-3 border rounded-xl outline-none focus:border-indigo-500">
+                    <datalist id="products">
+                        <option value="חלב"><option value="לחם"><option value="ביצים"><option value="גבינה"><option value="קוטג'"><option value="עגבניות"><option value="מלפפונים">
+                    </datalist>
+                </div>
+                <button onclick="startScanner()" class="bg-indigo-100 text-indigo-600 p-3 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 11v1m4-8h1m-1 4h1m-9-4h1m-1 4h1M4 12h1m14 0h1m-9-7v1m0 11v1m4-8h1m-1 4h1m-9-4h1m-1 4h1M4 12h1m14 0h1"></path></svg>
+                </button>
+            </div>
             <input type="number" id="itemPrice" placeholder="מחיר ליחידה" class="w-full p-3 border rounded-xl mb-3 outline-none">
             <div class="flex gap-2">
                 <button onclick="addItem()" class="flex-1 bg-green-500 text-white py-3 rounded-xl font-bold">הוסף</button>
@@ -104,17 +91,10 @@
 
     <div class="bottom-bar text-white">
         <div class="flex justify-around mb-4 text-center">
-            <div>
-                <div class="text-[10px] opacity-70">שולם (V)</div>
-                <div class="text-lg font-bold">₪<span id="paidSum">0.00</span></div>
-            </div>
+            <div><div class="text-[10px] opacity-70">שולם</div><div class="text-lg font-bold">₪<span id="paidSum">0.00</span></div></div>
             <div class="w-px bg-white/20"></div>
-            <div>
-                <div class="text-[10px] opacity-70">סה"כ כללי</div>
-                <div class="text-lg font-bold">₪<span id="totalSum">0.00</span></div>
-            </div>
+            <div><div class="text-[10px] opacity-70">סה"כ</div><div class="text-lg font-bold">₪<span id="totalSum">0.00</span></div></div>
         </div>
-        
         <div class="flex justify-between items-center px-4">
             <button onclick="openDeleteModal()" class="w-12 h-12 bg-red-500/80 rounded-full flex items-center justify-center shadow-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
             <button onclick="openForm()" class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-xl border-4 border-white/20 -mt-10"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M12 4v16m8-8H4"></path></svg></button>
@@ -125,37 +105,73 @@
     <script>
         let shoppingList = JSON.parse(localStorage.getItem('LIST_FINAL_V1')) || [];
         let isLocked = true;
-        let sortable = null;
-        let currentEditIndex = null;
+        let html5QrCode = null;
 
+        // --- לוגיקת סריקה ---
+        async function startScanner() {
+            document.getElementById('scannerModal').style.display = 'flex';
+            html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+            
+            try {
+                await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+            } catch (err) {
+                alert("לא ניתן לגשת למצלמה. וודא שנתת הרשאה.");
+                stopScanner();
+            }
+        }
+
+        async function onScanSuccess(decodedText) {
+            stopScanner();
+            document.getElementById('itemName').value = "מחפש מוצר...";
+            
+            try {
+                // פנייה למאגר מוצרים (Open Food Facts)
+                const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${decodedText}.json`);
+                const data = await res.json();
+                
+                if (data.status === 1) {
+                    // מוצא את השם בעברית או באנגלית
+                    const pName = data.product.product_name_he || data.product.product_name || "מוצר לא מזוהה";
+                    document.getElementById('itemName').value = pName;
+                } else {
+                    document.getElementById('itemName').value = "מוצר חדש (" + decodedText + ")";
+                }
+            } catch (e) {
+                document.getElementById('itemName').value = decodedText;
+            }
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('scannerModal').style.display = 'none';
+                }).catch(() => {
+                    document.getElementById('scannerModal').style.display = 'none';
+                });
+            } else {
+                document.getElementById('scannerModal').style.display = 'none';
+            }
+        }
+
+        // --- לוגיקת אפליקציה ---
         function openForm() { document.getElementById('inputForm').classList.remove('hidden'); document.getElementById('itemName').focus(); }
         function closeForm() { document.getElementById('inputForm').classList.add('hidden'); }
-        
         function openDeleteModal() { if (shoppingList.length > 0) document.getElementById('customModal').style.display = 'flex'; }
         function closeDeleteModal() { document.getElementById('customModal').style.display = 'none'; }
         function confirmClearAll() { shoppingList = []; saveAndRender(); closeDeleteModal(); }
 
         function openPriceModal(index) {
             currentEditIndex = index;
-            const item = shoppingList[index];
-            document.getElementById('editItemName').innerText = item.name;
-            document.getElementById('newPriceInput').value = item.unitPrice;
+            document.getElementById('editItemName').innerText = shoppingList[index].name;
+            document.getElementById('newPriceInput').value = shoppingList[index].unitPrice;
             document.getElementById('priceModal').style.display = 'flex';
-            setTimeout(() => document.getElementById('newPriceInput').select(), 100);
         }
-
-        function closePriceModal() {
-            document.getElementById('priceModal').style.display = 'none';
-            currentEditIndex = null;
-        }
-
+        function closePriceModal() { document.getElementById('priceModal').style.display = 'none'; }
         function confirmPriceUpdate() {
-            const newValue = parseFloat(document.getElementById('newPriceInput').value);
-            if (!isNaN(newValue) && currentEditIndex !== null) {
-                shoppingList[currentEditIndex].unitPrice = newValue;
-                saveAndRender();
-                closePriceModal();
-            }
+            const val = parseFloat(document.getElementById('newPriceInput').value) || 0;
+            shoppingList[currentEditIndex].unitPrice = val;
+            saveAndRender(); closePriceModal();
         }
 
         function addItem() {
@@ -169,42 +185,36 @@
             closeForm();
         }
 
-        function saveAndRender() {
-            localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList));
-            render();
-        }
+        function saveAndRender() { localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList)); render(); }
 
         function render() {
             const container = document.getElementById('itemsList');
-            const emptyMsg = document.getElementById('emptyMsg');
             container.innerHTML = '';
-            if (shoppingList.length === 0) { emptyMsg.classList.remove('hidden'); } 
-            else {
-                emptyMsg.classList.add('hidden');
-                shoppingList.forEach((item, index) => {
-                    const div = document.createElement('div');
-                    div.className = `bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 item-card ${!isLocked ? 'edit-mode' : ''}`;
-                    div.dataset.id = item.id;
-                    div.innerHTML = `
-                        <div class="drag-handle text-gray-300"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 7h2v2H7V7zm0 4h2v2H7v-2zm4-4h2v2h-2V7zm0 4h2v2h-2v-2zM7 3h2v2H7V3zm4 0h2v2h-2V3zm0 8h2v2h-2v-2zm0 4h2v2h-2v-2zM7 15h2v2H7v-2z"></path></svg></div>
-                        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${index})" class="w-6 h-6 rounded-full border-gray-300 text-indigo-600">
-                        <div class="flex-1">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="font-bold ${item.checked ? 'line-through text-gray-400' : 'text-gray-800'}">${item.name}</span>
-                                <span onclick="openPriceModal(${index})" class="font-black text-indigo-600 cursor-pointer">₪${(item.unitPrice * item.qty).toFixed(2)}</span>
+            document.getElementById('emptyMsg').style.display = shoppingList.length ? 'none' : 'block';
+            
+            shoppingList.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 item-card ${!isLocked ? 'edit-mode' : ''}`;
+                div.dataset.id = item.id;
+                div.innerHTML = `
+                    <div class="drag-handle text-gray-300"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 7h2v2H7V7zm0 4h2v2H7v-2zm4-4h2v2h-2V7zm0 4h2v2h-2v-2z"></path></svg></div>
+                    <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${index})" class="w-6 h-6 rounded-full border-gray-300 text-indigo-600">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold ${item.checked ? 'line-through text-gray-400' : ''}">${item.name}</span>
+                            <span onclick="openPriceModal(${index})" class="font-black text-indigo-600">₪${(item.unitPrice * item.qty).toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-3">
+                            <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border">
+                                <button onclick="updateQty(${index}, 1)" class="w-8 h-8 bg-white rounded shadow text-green-600">+</button>
+                                <span class="font-bold">${item.qty}</span>
+                                <button onclick="updateQty(${index}, -1)" class="w-8 h-8 bg-white rounded shadow text-red-500">-</button>
                             </div>
-                            <div class="flex justify-between items-center mt-3">
-                                <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border">
-                                    <button onclick="updateQty(${index}, 1)" class="w-8 h-8 bg-white rounded shadow text-green-600 font-bold">+</button>
-                                    <span class="font-bold w-4 text-center">${item.qty}</span>
-                                    <button onclick="updateQty(${index}, -1)" class="w-8 h-8 bg-white rounded shadow text-red-500 font-bold">-</button>
-                                </div>
-                                <button onclick="removeItem(${index})" class="p-2 text-red-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                            </div>
-                        </div>`;
-                    container.appendChild(div);
-                });
-            }
+                            <button onclick="removeItem(${index})" class="text-red-300"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
+                    </div>`;
+                container.appendChild(div);
+            });
             calculate();
             if (!isLocked) initSort();
         }
@@ -222,29 +232,19 @@
         
         function toggleLock() {
             isLocked = !isLocked;
-            const btn = document.getElementById('lockBtn');
-            const icon = document.getElementById('lockIcon');
-            const tag = document.getElementById('statusTag');
-            if (isLocked) {
-                btn.className = "w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg";
-                tag.innerText = "גרירה נעולה";
-                icon.innerHTML = '<path stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>';
-            } else {
-                btn.className = "w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg";
-                tag.innerText = "מצב עריכה";
-                icon.innerHTML = '<path stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2M5 21h14a2 2 0 002-2v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z"></path>';
-            }
+            document.getElementById('statusTag').innerText = isLocked ? "גרירה נעולה" : "מצב עריכה";
+            document.getElementById('lockBtn').className = isLocked ? "w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg" : "w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg";
             render();
         }
 
         function initSort() {
-            if (sortable) sortable.destroy();
-            sortable = Sortable.create(document.getElementById('itemsList'), {
+            const el = document.getElementById('itemsList');
+            Sortable.create(el, {
                 handle: '.drag-handle', animation: 150,
                 onEnd: () => {
-                    const newArr = [];
-                    document.querySelectorAll('.item-card').forEach(el => {
-                        newArr.push(shoppingList.find(i => i.id === el.dataset.id));
+                    let newArr = [];
+                    document.querySelectorAll('.item-card').forEach(c => {
+                        newArr.push(shoppingList.find(i => i.id === c.dataset.id));
                     });
                     shoppingList = newArr;
                     localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList));
@@ -252,7 +252,6 @@
             });
         }
 
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
         render();
     </script>
 </body>
