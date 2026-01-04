@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>רשימת קניות</title>
+    <title>רשימת קניות חכמה</title>
 
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366f1">
-    
-    <!-- אייקונים -->
-    <link rel="icon" type="image/png" sizes="192x192" href="https://cdn-icons-png.flaticon.com/512/3081/3081559.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/3081/3081559.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="https://cdn-icons-png.flaticon.com/512/3081/3081559.png">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background: #f4f7fa; padding-bottom: 220px; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f4f7fa; padding-bottom: 220px; touch-action: manipulation; }
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); z-index: 1000; padding: 15px; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
         .drag-handle { cursor: grab; display: none; }
         .edit-mode .drag-handle { display: flex; }
         .sortable-ghost { opacity: 0.3; background: #e0e7ff; }
+        
+        /* Modal Styles */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
         .modal-content { background: white; width: 100%; max-width: 320px; border-radius: 28px; padding: 30px; text-align: center; }
         .warning-icon-circle { background: #fee2e2; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
@@ -182,21 +181,25 @@
             const el = document.getElementById('itemsList');
             Sortable.create(el, { handle: '.drag-handle', animation: 150, onEnd: () => {
                 let newArr = [];
-                document.querySelectorAll('.item-card').forEach(c => { newArr.push(shoppingList.find(i => i.id === c.dataset.id)); });
+                document.querySelectorAll('.item-card').forEach(c => { 
+                    newArr.push(shoppingList.find(i => i.id === c.dataset.id)); 
+                });
                 shoppingList = newArr;
                 localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList));
             }});
         }
 
-        // רישום Service Worker עבור PWA Builder
+        // --- Service Worker Registration for PWA ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
                 .then(reg => console.log('SW Registered', reg))
-                .catch(err => console.log('SW Failed', err));
+                .catch(err => console.error('SW Registration Failed', err));
             });
         }
+
         render();
     </script>
 </body>
 </html>
+
