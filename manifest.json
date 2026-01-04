@@ -3,7 +3,7 @@
   "name": "רשימת קניות חכמה",
   "short_name": "רשימת קניות",
   "description": "אפליקציה פשוטה ונוחה לניהול רשימת קניות, מעקב אחר מחירים וסידור מוצרים",
-  "start_url": "/Sl/",
+  "start_url": "/Sl/index.html",
   "scope": "/Sl/",
   "display": "standalone",
   "background_color": "#f4f7fa",
@@ -14,31 +14,26 @@
   "categories": ["shopping", "productivity", "lifestyle"],
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3081/3081559.png",
-      "sizes": "192x192",
+      "src": "icon.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3081/3081559.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3081/3081559.png",
-      "sizes": "512x512",
+      "src": "icon.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "https://via.placeholder.com/1080x1920/6366f1/ffffff?text=Shopping+List",
-      "sizes": "1080x1920",
+      "src": "icon.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "מסך ראשי של אפליקציית רשימת קניות"
     }
   ]
 }
+
