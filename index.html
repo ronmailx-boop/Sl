@@ -14,11 +14,45 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background: #f4f7fa; padding-bottom: 220px; touch-action: manipulation; }
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); z-index: 1000; padding: 15px; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
-        .drag-handle { cursor: grab; padding: 10px; margin-right: -10px; }
-        .sortable-ghost { opacity: 0.3; background: #e0e7ff; }
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: #f4f7fa; 
+            padding-bottom: 220px; 
+            touch-action: manipulation; 
+        }
+        .bottom-bar { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); 
+            z-index: 1000; padding: 15px; border-radius: 20px 20px 0 0; 
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1); 
+        }
         
+        /* שיפורי גרירה */
+        .item-card {
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .drag-handle { 
+            cursor: grab; 
+            padding: 12px; /* אזור לחיצה גדול יותר */
+            margin: -12px;
+            margin-left: 5px;
+            color: #d1d5db;
+        }
+        .sortable-ghost { 
+            opacity: 0.2; 
+            background: #e0e7ff; 
+        }
+        .sortable-drag {
+            opacity: 0.95 !important;
+            background: white !important;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
+            transform: scale(1.02);
+            border: 2px solid #6366f1 !important;
+        }
+
+        /* מודאלים */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
         .modal-content { background: white; width: 100%; max-width: 320px; border-radius: 28px; padding: 30px; text-align: center; }
         .warning-icon-circle { background: #fee2e2; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
@@ -46,7 +80,7 @@
         <div class="modal-content shadow-2xl">
             <h2 class="text-xl font-bold mb-4 text-gray-800">עדכון מחיר</h2>
             <p id="editItemName" class="mb-4 text-indigo-600 font-bold"></p>
-            <input type="number" id="newPriceInput" class="w-full p-4 border-2 border-indigo-100 rounded-2xl mb-6 text-center text-xl font-bold outline-none">
+            <input type="number" id="newPriceInput" inputmode="decimal" class="w-full p-4 border-2 border-indigo-100 rounded-2xl mb-6 text-center text-xl font-bold outline-none">
             <div class="flex gap-3">
                 <button onclick="confirmPriceUpdate()" class="flex-1 py-4 bg-indigo-600 text-white font-bold rounded-2xl">עדכן</button>
                 <button onclick="closePriceModal()" class="flex-1 py-4 bg-gray-100 rounded-2xl font-bold">ביטול</button>
@@ -62,7 +96,7 @@
 
         <div id="inputForm" class="hidden bg-white p-5 rounded-2xl shadow-lg mb-4 border-2 border-indigo-100 relative">
             <input type="text" id="itemName" autocomplete="off" placeholder="מה קונים?" class="w-full p-3 border rounded-xl mb-3 outline-none focus:border-indigo-500">
-            <input type="number" id="itemPrice" placeholder="מחיר ליחידה (₪)" class="w-full p-3 border rounded-xl mb-3 outline-none">
+            <input type="number" id="itemPrice" inputmode="decimal" placeholder="מחיר ליחידה (₪)" class="w-full p-3 border rounded-xl mb-3 outline-none">
             <div class="flex gap-2">
                 <button onclick="addItem()" class="flex-1 bg-green-500 text-white py-3 rounded-xl font-bold shadow-md">הוסף</button>
                 <button onclick="closeForm()" class="flex-1 bg-gray-200 text-gray-600 py-3 rounded-xl">ביטול</button>
@@ -90,7 +124,7 @@
         let shoppingList = JSON.parse(localStorage.getItem('LIST_FINAL_V1')) || [];
         let isLocked = true;
         let currentEditIndex = null;
-        let sortableInstance = null; // משתנה לשמירת מופע הגרירה
+        let sortableInstance = null;
 
         function openForm() { document.getElementById('inputForm').classList.remove('hidden'); document.getElementById('itemName').focus(); }
         function closeForm() { document.getElementById('inputForm').classList.add('hidden'); }
@@ -139,7 +173,7 @@
                 div.className = `bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 item-card`;
                 div.dataset.id = item.id;
                 div.innerHTML = `
-                    <div class="drag-handle text-gray-300 ${isLocked ? 'hidden' : 'block'}">
+                    <div class="drag-handle ${isLocked ? 'hidden' : 'block'}">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M7 7h2v2H7V7zm0 4h2v2H7v-2zm4-4h2v2h-2V7zm0 4h2v2h-2v-2z"></path></svg>
                     </div>
                     <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${index})" class="w-6 h-6 rounded-full border-gray-300 text-indigo-600">
@@ -161,7 +195,7 @@
             });
             
             calculate();
-            initSort(); // קריאה לפונקציית הגרירה המעודכנת
+            initSort();
         }
 
         function calculate() {
@@ -180,7 +214,6 @@
             document.getElementById('statusTag').innerText = isLocked ? "גרירה נעולה" : "מצב עריכה";
             document.getElementById('lockBtn').className = isLocked ? "w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg" : "w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg";
             
-            // עדכון האייקון של המנעול
             document.getElementById('lockPath').setAttribute('d', isLocked ? 
                 "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" : 
                 "M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
@@ -192,18 +225,21 @@
         function initSort() {
             const el = document.getElementById('itemsList');
             
-            // השמדת מופע קודם אם קיים למניעת התנגשויות
             if (sortableInstance) {
                 sortableInstance.destroy();
                 sortableInstance = null;
             }
 
-            // יצירת מופע חדש רק אם לא נעול
             if (!isLocked) {
                 sortableInstance = Sortable.create(el, { 
                     handle: '.drag-handle', 
-                    animation: 150,
+                    animation: 250,
                     ghostClass: 'sortable-ghost',
+                    dragClass: 'sortable-drag',
+                    delay: 100, // השהיה קלה למניעת גרירה בטעות בזמן גלילה
+                    delayOnTouchOnly: true,
+                    touchStartThreshold: 5,
+                    forceFallback: true, // משפר מאוד את התנועה במובייל
                     onEnd: () => {
                         let newArr = [];
                         document.querySelectorAll('.item-card').forEach(c => { 
@@ -212,17 +248,9 @@
                         });
                         shoppingList = newArr;
                         localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList));
-                        // לא קוראים ל-render כאן כדי למנוע קפיצות ויזואליות בזמן הגרירה
                     }
                 });
             }
-        }
-
-        // Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(() => {});
-            });
         }
 
         render();
