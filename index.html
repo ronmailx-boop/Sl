@@ -16,11 +16,9 @@
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; background: #f4f7fa; padding-bottom: 220px; touch-action: manipulation; }
         .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); z-index: 1000; padding: 15px; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
-        .drag-handle { cursor: grab; display: none; }
-        .edit-mode .drag-handle { display: flex; }
+        .drag-handle { cursor: grab; padding: 10px; margin-right: -10px; }
         .sortable-ghost { opacity: 0.3; background: #e0e7ff; }
         
-        /* Modal Styles */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
         .modal-content { background: white; width: 100%; max-width: 320px; border-radius: 28px; padding: 30px; text-align: center; }
         .warning-icon-circle { background: #fee2e2; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
@@ -84,7 +82,7 @@
         <div class="flex justify-between items-center px-4">
             <button onclick="openDeleteModal()" class="w-12 h-12 bg-red-500/80 rounded-full flex items-center justify-center shadow-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
             <button onclick="openForm()" class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-xl border-4 border-white/20 -mt-10"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M12 4v16m8-8H4"></path></svg></button>
-            <button id="lockBtn" onclick="toggleLock()" class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg"><svg id="lockIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></button>
+            <button id="lockBtn" onclick="toggleLock()" class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg"><svg id="lockIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path id="lockPath" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></button>
         </div>
     </div>
 
@@ -92,6 +90,7 @@
         let shoppingList = JSON.parse(localStorage.getItem('LIST_FINAL_V1')) || [];
         let isLocked = true;
         let currentEditIndex = null;
+        let sortableInstance = null; // משתנה לשמירת מופע הגרירה
 
         function openForm() { document.getElementById('inputForm').classList.remove('hidden'); document.getElementById('itemName').focus(); }
         function closeForm() { document.getElementById('inputForm').classList.add('hidden'); }
@@ -125,7 +124,10 @@
             closeForm();
         }
 
-        function saveAndRender() { localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList)); render(); }
+        function saveAndRender() { 
+            localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList)); 
+            render(); 
+        }
 
         function render() {
             const container = document.getElementById('itemsList');
@@ -134,10 +136,12 @@
             
             shoppingList.forEach((item, index) => {
                 const div = document.createElement('div');
-                div.className = `bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 item-card ${!isLocked ? 'edit-mode' : ''}`;
+                div.className = `bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 item-card`;
                 div.dataset.id = item.id;
                 div.innerHTML = `
-                    <div class="drag-handle text-gray-300 ${isLocked ? 'hidden' : 'block'}"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 7h2v2H7V7zm0 4h2v2H7v-2zm4-4h2v2h-2V7zm0 4h2v2h-2v-2z"></path></svg></div>
+                    <div class="drag-handle text-gray-300 ${isLocked ? 'hidden' : 'block'}">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M7 7h2v2H7V7zm0 4h2v2H7v-2zm4-4h2v2h-2V7zm0 4h2v2h-2v-2z"></path></svg>
+                    </div>
                     <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${index})" class="w-6 h-6 rounded-full border-gray-300 text-indigo-600">
                     <div class="flex-1">
                         <div class="flex justify-between items-center">
@@ -155,8 +159,9 @@
                     </div>`;
                 container.appendChild(div);
             });
+            
             calculate();
-            if (!isLocked) initSort();
+            initSort(); // קריאה לפונקציית הגרירה המעודכנת
         }
 
         function calculate() {
@@ -174,27 +179,49 @@
             isLocked = !isLocked;
             document.getElementById('statusTag').innerText = isLocked ? "גרירה נעולה" : "מצב עריכה";
             document.getElementById('lockBtn').className = isLocked ? "w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg" : "w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg";
+            
+            // עדכון האייקון של המנעול
+            document.getElementById('lockPath').setAttribute('d', isLocked ? 
+                "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" : 
+                "M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
+            );
+            
             render();
         }
 
         function initSort() {
             const el = document.getElementById('itemsList');
-            Sortable.create(el, { handle: '.drag-handle', animation: 150, onEnd: () => {
-                let newArr = [];
-                document.querySelectorAll('.item-card').forEach(c => { 
-                    newArr.push(shoppingList.find(i => i.id === c.dataset.id)); 
+            
+            // השמדת מופע קודם אם קיים למניעת התנגשויות
+            if (sortableInstance) {
+                sortableInstance.destroy();
+                sortableInstance = null;
+            }
+
+            // יצירת מופע חדש רק אם לא נעול
+            if (!isLocked) {
+                sortableInstance = Sortable.create(el, { 
+                    handle: '.drag-handle', 
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: () => {
+                        let newArr = [];
+                        document.querySelectorAll('.item-card').forEach(c => { 
+                            const item = shoppingList.find(i => i.id === c.dataset.id);
+                            if (item) newArr.push(item);
+                        });
+                        shoppingList = newArr;
+                        localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList));
+                        // לא קוראים ל-render כאן כדי למנוע קפיצות ויזואליות בזמן הגרירה
+                    }
                 });
-                shoppingList = newArr;
-                localStorage.setItem('LIST_FINAL_V1', JSON.stringify(shoppingList));
-            }});
+            }
         }
 
-        // --- Service Worker Registration for PWA ---
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('SW Registered', reg))
-                .catch(err => console.error('SW Registration Failed', err));
+                navigator.serviceWorker.register('sw.js').catch(() => {});
             });
         }
 
