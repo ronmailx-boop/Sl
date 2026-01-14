@@ -1,0 +1,25 @@
+* { box-sizing: border-box; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; padding-bottom: 240px; margin: 0; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+.item-card { background: white; border-radius: 24px; padding: 18px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
+
+.trash-btn { color: #ef4444; border: none; background: #fee2e2; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #7367f0; padding: 20px 20px 45px; border-radius: 35px 35px 0 0; box-shadow: 0 -10px 30px rgba(115, 103, 240, 0.3); }
+
+.bottom-circle-btn { width: 54px; height: 54px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; background: rgba(255,255,255,0.1); font-size: 20px; }
+
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(8px); }
+.modal-overlay.active { display: flex; }
+.edit-modal { background: white; padding: 30px; border-radius: 32px; width: 92%; max-width: 420px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+
+.modal-input { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center; font-size: 16px; background: #f1f5f9; color: #1e293b; font-weight: 600; }
+.modal-input:focus { outline: 2px solid #7367f0; background: white; }
+
+.app-header { background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 100; }
+
+.tab-btn { flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; text-align: center; cursor: pointer; background: white; color: #94a3b8; border: 1px solid #e2e8f0; }
+
+.category-separator { background: linear-gradient(135deg, #7367f0 0%, #a8a1f8 100%); color: white; padding: 20px; border-radius: 24px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 20px rgba(115, 103, 240, 0.2); }
