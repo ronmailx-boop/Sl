@@ -15,20 +15,19 @@
         <div class="header-controls">
             <div id="cloudBtn" onclick="handleAuthClick()" class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-bold border border-indigo-100 flex items-center gap-1 cursor-pointer">
                 <span>סנכרון ענן</span>
-                <div id="cloudIndicator" class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                <div id="cloudIndicator" class="w-2 h-2 bg-gray-300 rounded-full transition-colors"></div>
             </div>
             <button onclick="openModal('settingsModal')" class="p-2 gear-btn">
-                <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
             </button>
         </div>
     </div>
 
-    <div class="max-w-md mx-auto p-4 no-print">
+    <div class="max-w-md mx-auto p-4">
         <div class="flex gap-3 mb-6">
             <div id="tabLists" onclick="showPage('lists')" class="tab-btn">הרשימה שלי</div>
             <div id="tabSummary" onclick="showPage('summary')" class="tab-btn">הרשימות שלי</div>
         </div>
-
         <div id="pageLists">
             <div class="category-separator">
                 <div id="listNameDisplay" class="text-3xl font-black text-center" onclick="openModal('editListNameModal')"></div>
@@ -36,67 +35,50 @@
             <div id="categoryFilterBar" class="flex gap-2 overflow-x-auto pb-4 no-scrollbar"></div>
             <div id="itemsContainer"></div>
         </div>
-        
-        <div id="pageSummary" class="hidden">
-            <div id="summaryContainer"></div>
-        </div>
+        <div id="pageSummary" class="hidden"><div id="summaryContainer"></div></div>
     </div>
 
     <div class="bottom-bar text-white no-print">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex-1 text-center">
-                <div class="text-[10px] opacity-70" id="totalLabel">סה"כ רשימה</div>
-                <div class="text-xl font-bold">₪<span id="displayTotal">0.00</span></div>
-            </div>
+        <div class="flex items-center justify-between mb-4 text-center">
+            <div class="flex-1">₪<span id="displayTotal">0.00</span></div>
             <button onclick="openModal('inputForm')" class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-2xl border-4 border-white/20 text-white text-4xl font-bold">+</button>
-            <div class="flex-1 text-center">
-                <div class="text-[10px] opacity-70">שולם</div>
-                <div class="text-xl font-bold">₪<span id="displayPaid">0.00</span></div>
-            </div>
+            <div class="flex-1">₪<span id="displayPaid">0.00</span></div>
         </div>
         <div class="flex items-center justify-between gap-4">
             <button onclick="toggleLock()" id="mainLockBtn" class="bottom-circle-btn">🔒</button>
-            <div class="text-center flex-1">
-                <div class="text-[10px] opacity-70">נשאר לשלם</div>
-                <div class="text-2xl font-black text-orange-300">₪<span id="displayLeft">0.00</span></div>
-            </div>
+            <div class="text-center flex-1 text-2xl font-black text-orange-300">₪<span id="displayLeft">0.00</span></div>
             <button onclick="openModal('confirmModal')" class="bottom-circle-btn bg-red-500">🗑️</button>
         </div>
     </div>
 
-    <div id="inputForm" class="modal-overlay no-print"><div class="edit-modal">
+    <div id="inputForm" class="modal-overlay"><div class="edit-modal">
         <h2 class="mb-4 font-bold text-xl">הוספת מוצר</h2>
-        <input type="text" id="itemName" placeholder="מה קונים?" class="modal-input">
-        <input type="number" id="itemPrice" inputmode="decimal" placeholder="מחיר" class="modal-input">
-        <input type="text" id="itemCategoryCustom" placeholder="קטגוריה (או בחר למטה):" class="modal-input mb-1">
+        <input type="text" id="itemName" placeholder="שם מוצר" class="modal-input">
+        <input type="number" id="itemPrice" placeholder="מחיר" class="modal-input">
+        <input type="text" id="itemCategoryCustom" placeholder="קטגוריה חדשה או בחר:" class="modal-input mb-1">
         <select id="itemCategorySelect" class="modal-input mb-4" onchange="document.getElementById('itemCategoryCustom').value = this.value">
-            <option value="כללי">📁 כללי</option>
-            <option value="אוכל">🛒 אוכל</option>
-            <option value="רכב">🚗 רכב</option>
-            <option value="חשבונות">💳 חשבונות</option>
+            <option value="כללי">כללי</option><option value="אוכל">אוכל</option><option value="רכב">רכב</option>
         </select>
         <button class="bg-green-500 text-white w-full py-4 rounded-xl font-bold" onclick="addItem()">הוסף</button>
     </div></div>
 
-    <div id="editItemModal" class="modal-overlay no-print"><div class="edit-modal">
+    <div id="editItemModal" class="modal-overlay"><div class="edit-modal">
         <h2 class="mb-4 font-bold text-xl">עריכת מוצר</h2>
         <input type="text" id="editItemName" class="modal-input">
         <input type="number" id="editItemPrice" class="modal-input">
-        <input type="text" id="editItemCategoryCustom" class="modal-input">
-        <div class="flex gap-3 mt-4">
-            <button class="bg-indigo-600 text-white flex-1 py-4 rounded-xl font-bold" onclick="saveItemEdit()">שמור</button>
-            <button class="bg-gray-200 flex-1 py-4 rounded-xl font-bold" onclick="closeModal('editItemModal')">ביטול</button>
-        </div>
+        <input type="text" id="editItemCategory" class="modal-input" placeholder="שינוי קטגוריה">
+        <button class="bg-indigo-600 text-white w-full py-4 rounded-xl font-bold mt-4" onclick="saveItemEdit()">שמור</button>
+        <button class="mt-4 text-gray-400" onclick="closeModal('editItemModal')">ביטול</button>
     </div></div>
 
-    <div id="confirmModal" class="modal-overlay no-print"><div class="edit-modal"><h2>ניקוי רשימה?</h2><div class="flex gap-3 mt-4"><button class="bg-red-500 text-white flex-1 py-4 rounded-xl font-bold" onclick="executeClear()">מחק הכל</button><button class="bg-gray-200 flex-1 py-4 rounded-xl font-bold" onclick="closeModal('confirmModal')">ביטול</button></div></div></div>
-    
-    <div id="settingsModal" class="modal-overlay no-print"><div class="edit-modal">
+    <div id="settingsModal" class="modal-overlay"><div class="edit-modal">
         <h2 class="mb-4">הגדרות</h2>
-        <button onclick="toggleDarkMode()" class="w-full bg-indigo-50 text-indigo-600 py-4 rounded-xl font-bold mb-4">מצב לילה 🌙</button>
-        <button onclick="exportData()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold mb-2">ייצוא גיבוי לקובץ 📥</button>
-        <button onclick="closeModal('settingsModal')" class="mt-4 text-gray-400 block w-full">סגור</button>
+        <button onclick="exportData()" class="w-full bg-green-600 text-white py-3 rounded-xl mb-2">ייצוא לקובץ 📥</button>
+        <button onclick="closeModal('settingsModal')" class="mt-4 text-gray-400">סגור</button>
     </div></div>
+    
+    <div id="confirmModal" class="modal-overlay"><div class="edit-modal"><h2>מחיקת הכל?</h2><button class="bg-red-500 text-white w-full py-4 rounded-xl font-bold mt-4" onclick="executeClear()">מחק הכל</button></div></div>
+    <div id="editListNameModal" class="modal-overlay"><div class="edit-modal"><h2>שם רשימה</h2><input type="text" id="editListNameInput" class="modal-input"><button class="bg-indigo-600 text-white w-full py-4 rounded-xl font-bold" onclick="saveListName()">שמור</button></div></div>
 
     <script src="script.js"></script>
 </body>
