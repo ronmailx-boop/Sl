@@ -6,16 +6,14 @@
     <title>Vplus - ניהול תקציב חכם</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#7367f0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="app-header no-print">
         <h1 class="font-bold text-2xl" style="direction: ltr;"><span style="color: #22c55e !important;">V</span><span class="text-indigo-600">plus</span></h1>
         <div class="header-controls">
-            <div id="cloudBtn" class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-bold border border-indigo-100 flex items-center gap-1 cursor-pointer">
+            <div id="cloudBtn" onclick="handleAuthClick()" class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-bold border border-indigo-100 flex items-center gap-1 cursor-pointer">
                 <span>סנכרון ענן</span>
                 <div id="cloudIndicator" class="w-2 h-2 bg-gray-300 rounded-full"></div>
             </div>
@@ -35,9 +33,7 @@
             <div class="category-separator">
                 <div id="listNameDisplay" class="text-3xl font-black text-center" onclick="openModal('editListNameModal')"></div>
             </div>
-            
             <div id="categoryFilterBar" class="flex gap-2 overflow-x-auto pb-4 no-scrollbar"></div>
-
             <div id="itemsContainer"></div>
         </div>
         
@@ -72,39 +68,34 @@
         <h2 class="mb-4 font-bold text-xl">הוספת מוצר</h2>
         <input type="text" id="itemName" placeholder="מה קונים?" class="modal-input">
         <input type="number" id="itemPrice" inputmode="decimal" placeholder="מחיר" class="modal-input">
-        <div class="mb-2 text-right text-xs text-gray-400">קטגוריה:</div>
-        <input type="text" id="itemCategoryCustom" placeholder="הקלד קטגוריה חדשה או בחר:" class="modal-input mb-1">
-        <select id="itemCategory" class="modal-input mb-4" onchange="document.getElementById('itemCategoryCustom').value = this.value">
-            <option value="">-- בחר מרשימה --</option>
+        <input type="text" id="itemCategoryCustom" placeholder="קטגוריה (או בחר למטה):" class="modal-input mb-1">
+        <select id="itemCategorySelect" class="modal-input mb-4" onchange="document.getElementById('itemCategoryCustom').value = this.value">
             <option value="כללי">📁 כללי</option>
             <option value="אוכל">🛒 אוכל</option>
             <option value="רכב">🚗 רכב</option>
-            <option value="בית">🏠 בית</option>
-            <option value="פנאי">🎨 פנאי</option>
             <option value="חשבונות">💳 חשבונות</option>
         </select>
-        <div class="flex gap-3"><button class="bg-green-500 text-white flex-1 py-4 rounded-xl font-bold" onclick="addItem()">הוסף</button></div>
+        <button class="bg-green-500 text-white w-full py-4 rounded-xl font-bold" onclick="addItem()">הוסף</button>
     </div></div>
 
     <div id="editItemModal" class="modal-overlay no-print"><div class="edit-modal">
         <h2 class="mb-4 font-bold text-xl">עריכת מוצר</h2>
         <input type="text" id="editItemName" class="modal-input">
-        <input type="number" id="editItemPrice" inputmode="decimal" class="modal-input">
-        <div class="mb-2 text-right text-xs text-gray-400">עדכון קטגוריה:</div>
-        <input type="text" id="editItemCategoryCustom" placeholder="שם קטגוריה..." class="modal-input mb-1">
-        <select id="editItemCategorySelect" class="modal-input mb-4" onchange="document.getElementById('editItemCategoryCustom').value = this.value">
-            <option value="">-- בחר מרשימה --</option>
-            <option value="כללי">📁 כללי</option>
-            <option value="אוכל">🛒 אוכל</option>
-            <option value="רכב">🚗 רכב</option>
-            <option value="בית">🏠 בית</option>
-            <option value="פנאי">🎨 פנאי</option>
-            <option value="חשבונות">💳 חשבונות</option>
-        </select>
-        <div class="flex gap-3">
-            <button class="bg-indigo-600 text-white flex-1 py-4 rounded-xl font-bold" onclick="saveItemEdit()">שמור שינויים</button>
-            <button class="bg-gray-100 flex-1 py-4 rounded-xl font-bold" onclick="closeModal('editItemModal')">ביטול</button>
+        <input type="number" id="editItemPrice" class="modal-input">
+        <input type="text" id="editItemCategoryCustom" class="modal-input">
+        <div class="flex gap-3 mt-4">
+            <button class="bg-indigo-600 text-white flex-1 py-4 rounded-xl font-bold" onclick="saveItemEdit()">שמור</button>
+            <button class="bg-gray-200 flex-1 py-4 rounded-xl font-bold" onclick="closeModal('editItemModal')">ביטול</button>
         </div>
+    </div></div>
+
+    <div id="confirmModal" class="modal-overlay no-print"><div class="edit-modal"><h2>ניקוי רשימה?</h2><div class="flex gap-3 mt-4"><button class="bg-red-500 text-white flex-1 py-4 rounded-xl font-bold" onclick="executeClear()">מחק הכל</button><button class="bg-gray-200 flex-1 py-4 rounded-xl font-bold" onclick="closeModal('confirmModal')">ביטול</button></div></div></div>
+    
+    <div id="settingsModal" class="modal-overlay no-print"><div class="edit-modal">
+        <h2 class="mb-4">הגדרות</h2>
+        <button onclick="toggleDarkMode()" class="w-full bg-indigo-50 text-indigo-600 py-4 rounded-xl font-bold mb-4">מצב לילה 🌙</button>
+        <button onclick="exportData()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold mb-2">ייצוא גיבוי לקובץ 📥</button>
+        <button onclick="closeModal('settingsModal')" class="mt-4 text-gray-400 block w-full">סגור</button>
     </div></div>
 
     <script src="script.js"></script>
